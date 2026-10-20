@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  user
+}
+
+model User {
+  userId   Int      @id @default(autoincrement())
+  userName String   @unique @db.VarChar(50)
+  email    String   @unique @db.VarChar(50)
+  password String   @db.VarChar(100)
+  role     Role     @default(user)
+  ratings  Rating[]
+
+  @@map("user")
+}
+
+model Menu {
+  menuId       Int      @id @default(autoincrement())
+  name         String   @db.VarChar(100)
+  price        Decimal  @db.Decimal(10, 2)
+  isBestSeller Boolean  @default(false)
+  typeId       Int
+  ratings      Rating[]
+
+  @@map("menu")
+}
+
+model Rating {
+  ratingId Int  @id @default(autoincrement())
+  score    Int
+  userId   Int
+  menuId   Int
+  user     User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  menu     Menu @relation(fields: [menuId], references: [menuId], onDelete: Cascade)
+
+  @@unique([userId, menuId])
+  @@map("rating")
+}
